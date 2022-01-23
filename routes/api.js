@@ -1,44 +1,60 @@
-const router = require("express").Router();
-const Workout = require("../models/workout.js");
+const app = require("express").Router();
+const { Workout } = require("../models");
+const db = require("../models");
 
-router.get("/api/workout", (req, res) => {
-  Workout.find({})
-    .sort({ date: -1 })
-    .then((dbWorkout) => {
-      res.json(dbWorkout);
+app.get("/workouts", (req, res) => {
+  db.Workout.find({})
+    .then((dbWorkouts) => {
+      res.json(dbWorkouts);
     })
     .catch((err) => {
-      res.status(404).json(err);
+      res.json(err);
     });
 });
 
-router.put("/api/workout", (req, res) => {
-  Workout.create(body)
-    .then((dbWorkout) => {
-      res.json(dbWorkout);
+app.get("/workouts/range", (req, res) => {
+  db.Workout.aggregate([
+    {
+      $addFields: {
+        totalDuration: { $sum: "$exercises.duration" },
+      },
+    },
+  ])
+    .sort({ day: -1 })
+    .limit(7)
+    .then((dbWorkouts) => {
+      res.json(dbWorkouts);
     })
     .catch((err) => {
-      res.status(404).json(err);
+      res.json(err);
     });
 });
 
-router.post("/api/workout", (req, res) => {
-  Workout.create(body)
+app.put("/workouts/:id", (req, res) => {
+  console.log("here");
+  db.Workout.findByIdAndUpdate(
+    req.params.id,
+    { $push: { exercises: req.body } },
+    { new: true, runValidators: true }
+  )
     .then((dbWorkout) => {
+      console.log("***", dbWorkout);
       res.json(dbWorkout);
     })
     .catch((err) => {
-      res.status(404).json(err);
+      console.log("***", err);
+      res.json(err);
     });
 });
 
-router.get("/api/workout/range", (req, res) => {
-  Workout.find({})
-    .sort({ duration: -1 })
-    .then((dbWorkout) => {
-      res.json(dbWorkout);
+app.post("/workouts", (req, res) => {
+  db.Workout.create(req.body)
+    .then((dbWorkouts) => {
+      res.json(dbWorkouts);
     })
     .catch((err) => {
-      res.status(404).json(err);
+      res.json(err);
     });
 });
+
+module.exports = app;

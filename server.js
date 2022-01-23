@@ -1,7 +1,4 @@
-const path = require("path");
 const express = require("express");
-const logger = require("morgan");
-const routes = require("./routes");
 const mongoose = require("mongoose");
 
 const PORT = process.env.PORT || 3000;
@@ -13,15 +10,18 @@ app.use(express.json());
 
 app.use(express.static("public"));
 
-mongoose.connect(process.env.MONGODB_URI || "mongodb://localhost/workout", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  useCreateIndex: true,
-  useFindAndModify: false,
-});
+mongoose.connect(
+  process.env.MONGODB_URI || "mongodb://localhost/workout-tracker",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
+    useFindAndModify: false,
+  }
+);
 
 // routes
-app.use(routes);
+app.use(require("./routes/api.js"));
 
 app.listen(PORT, () => {
   console.log(`App running on port ${PORT}!`);
